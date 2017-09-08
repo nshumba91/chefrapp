@@ -1,0 +1,315 @@
+<ion-app>
+    <!DOCTYPE html>
+    <!--
+    To change this license header, choose License Headers in Project Properties.
+    To change this template file, choose Tools | Templates
+    and open the template in the editor.
+    getNutrients (ndbNumber);
+    
+                console.log(data);
+                console.log(data.list)
+                console.log(data.list.item)
+                console.log(data.list.item[0])
+                console.log(data.list.item[0].ndbno)
+            });
+    -->
+    <html>
+    
+    <head>
+        <title> Chefr </title>
+        <style>
+            table {
+                font-family: arial, sans-serif;
+                border-collapse: collapse;
+                width: 100%;
+                table-layout: fixed;
+            }
+    
+            td,
+            th,
+            tr {
+                border: 1px solid #dddddd;
+                text-align: left;
+                padding: 8px;
+            }
+        </style>
+        <script src="http://code.jquery.com/jquery-latest.js"></script>
+    </head>
+    
+    <body>
+        <!-- HTML for calculating ingredient Cal and then cal p/ grams entered   -->
+    
+    
+        <br>
+    
+        <form class="list">
+            <div id="ingredientBox">
+                <label for="ingredientName" class="item item-input item-floating-label">
+                  <span class="input-label">Ingredient</span>
+                  <input id="ingredientName" name="ingredient" type="text" placeholder="">
+                </label>
+
+                <div class="spacer" style="width: 300px; height: 14px;"></div>
+
+                <div id="gramBox">
+                <label for="gramAmount" class="item item-input item-floating-label">
+                  <span class="input-label">Quantity(grams)</span>
+                  <input id="gramAmount" name="grams" type="text" placeholder="">
+                </label>
+
+                <div class="spacer" style="width: 300px; height: 14px;"></div>
+
+                <label class="item item-input item-floating-label">
+                        <span class="input-label">Kcals</span>
+                        <input type="text" placeholder="">
+                        <div id="answer">
+                      </label>
+              </form>
+        <!--table id="pleaseWork">
+    
+            <tbody>
+                <tr>
+                    <th>Ingredient</th>
+                    <th>Quantity (grams)</th>
+                    <th>Kcals</th>
+                </tr>
+                <tr>
+    
+                    <td>
+                        <div id="ingredientBox">
+                            <label for="ingredientName"> Enter ingredient name here: </label>
+                            <input id="ingredientName" type="text" name="ingredient">
+                        </div>
+                    </td>
+    
+                    <td>
+                        <div id="gramBox">
+                            <label for="gramAmount"> Enter the amount, in grams, here:  </label>
+                            <input id="gramAmount" type="text" name="grams">
+                        </div>
+                    </td>
+                    <td>
+                        <div id="answer">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    
+    
+    
+    
+    <!-- HTML for calculating Calories -->
+        <button id="hitButton" type="button" name="">Calculate Calories</button>
+        <br><br><br><br><br><br>
+    
+    
+    
+    <!-- HTML for calculating Calories per serving of dish -->
+          <button id="calculateServing" type="button" name="">Calculate Cal p/Per Serving of dish</button>
+      <div id="resultHere"> <p>Serving should print here: </p> </div>
+        <br><br><br><br><br><br><br><br><br><br><br><br>
+    
+    <!-- HTML for viewing all recipes -->
+       
+    
+    <button id="showButton" type="button" name="">View Recipes</button>
+      <div id="showRecipes"> <p>Info should print here: </p> </div>
+    
+    
+    </body>
+    
+    
+    <!-- Start of script  -->
+    
+    <script>
+        $("#hitButton").click(
+            function() {
+    
+    
+            }
+        );
+    
+    
+        $(function() {
+    
+            function getNDBNumber(nameToSearch) {
+    
+                var deferred = $.Deferred()
+    
+    
+    
+                $.getJSON(
+                    "https://api.nal.usda.gov/ndb/search/", {
+                        "api_key": "zVpvDMRmS6xpWuiU4jQN4PkTYipSvxvLJZAlJ89h",
+                        "q": nameToSearch,
+                        "max": "1",
+                        "format": "json"
+    
+                    }
+                ).done(function(data) {
+    
+                    var ndbNumber = data.list.item[0].ndbno
+                    deferred.resolve(ndbNumber)
+    
+    
+                })
+                return deferred.promise()
+            }
+    
+            function getNutrients(ndbNumber) {
+    
+                var deferred = $.Deferred()
+    
+                $.getJSON(
+                    "http://api.nal.usda.gov/ndb/nutrients/", {
+                        "api_key": "zVpvDMRmS6xpWuiU4jQN4PkTYipSvxvLJZAlJ89h",
+                        "ndbno": ndbNumber,
+                        "nutrients": "208",
+                        "max": "5"
+                    }).done(function(data) {
+    
+                    var valueAmount = data.report.foods[0].nutrients[0].value
+    
+                    deferred.resolve(valueAmount)
+    
+                    /* console.log(data);
+                    console.log(data.report.foods[0]);
+                    console.log(data.report.foods[0].nutrients[0]);
+                    console.log(data.report.foods[0].nutrients[0].value); */
+    
+    
+                });
+                return deferred.promise()
+            }
+    
+            function getContent(foodName) {
+    
+                var deferred = $.Deferred()
+    
+                getNDBNumber(foodName).done(function(ndbNumber) {
+                    //console.log (ndbNumber);
+                    getNutrients(ndbNumber).done(function(valueAmount) {
+                        //console.log(valueAmount);
+    
+                        deferred.resolve(valueAmount)
+                    })
+    
+                })
+                //$.getJSON ("https://api.nal.usda.gov/ndb/search/?format=json&q=butter&sort=n&max=25&offset=0&api_key=zVpvDMRmS6xpWuiU4jQN4PkTYipSvxvLJZAlJ89h")
+                return deferred.promise()
+            }
+    
+    
+    
+    // Button to calculate calories
+            $('#hitButton').click(
+    
+                function(event) {
+                    var foodInput = $('#ingredientName').val();
+    
+                    getContent(foodInput).done(
+    
+                        function(valueAmount) {
+                            var gramTotal = $('#gramAmount').val();
+                            $("#pleaseWork tr:last").before('<tr>' + '<td>' + foodInput + '</td>' + '<td>' + gramTotal + '</td>' + '<td>' + (valueAmount * (gramTotal /= 100)) + 'kilocalories' + '</td>' + '</tr>')
+                        });
+                });
+    
+    
+    // Button to calculate calories
+    
+            $('#nextButton').click(function(event) {
+                var titleDetails = $('#titleName').val();
+                var servingNumber = $('#servingAmount').val();
+                $.ajax({
+                    url: "chefr_php/createrecipe.php",
+                    method: "POST",
+                    data: JSON.stringify({
+                        title: titleDetails,
+                        servingNumber: servingNumber
+                    }),
+    
+    
+                }).done(function(recipeID) {
+    
+                    window.recipeID = recipeID;
+    
+                })
+                
+            })
+    //alert("You have entered " + titleDetails+" as your title, and you're going to input a recipe for " + servingNumber+" servings");
+    
+    
+    //Button to calculate calories
+    
+            $('#hitButton').click(function(event) {
+                var ingredient = $('#ingredientName').val();
+                var ingredientQuantity = $('#gramAmount').val();
+                getContent(ingredient).done(function(gramCalorie) {
+                    $.ajax({
+                        url: "chefr_php/createingredients.php",
+                        method: "POST",
+                        data: JSON.stringify({
+                            Ingredient: ingredient,
+                            IngredientQuantity: ingredientQuantity,
+                            calPer100g: gramCalorie,
+                            Recipe_ID: window.recipeID
+                        }),
+    
+    
+                    })
+                });
+    
+    
+               
+            })
+    
+    
+    //Button to calculate calorie per servings
+    
+             $('#calculateServing').click(function(event) {
+                $.ajax({
+                    type: 'GET',
+                    data: {
+                        recipeID: window.recipeID
+                    },
+                    url: 'chefr_php/calculateCaloriePerServing.php',
+                    success: function(data) {
+                     var getResult = jQuery.parseJSON(data);
+                        
+                       $("#resultHere").append(getResult);
+                       // need to add javascript call to post data back to ingredients table
+    
+                    }
+                });
+            });
+    
+    
+    // Button to view recipes
+    
+            $('#showButton').click(function(event) {
+                $.ajax({
+                    type: 'GET',
+                    url: 'chefr_php/retrieveRecipeList.php',
+                    success: function(data) {
+                        var stringIt = jQuery.parseJSON(data);
+                        var arraylength=stringIt.length;
+                    for (var x=0;x<arraylength;x++){
+                      $("#showRecipes").append(stringIt[x].title + '<br>');
+    
+    
+                    }
+    
+                    }
+                });
+            });
+    
+        });
+    </script>
+    </body>
+    
+    </html>
+    
+    
+    
+  </ion-content></ion-app>
